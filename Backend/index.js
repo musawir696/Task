@@ -6,6 +6,7 @@ const swaggerJsdoc = require('swagger-jsdoc');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorMiddleware');
 const startScheduler = require('./utils/scheduler');
+const logger = require('./middleware/loggerMiddleware');
 
 // Load env vars
 dotenv.config();
@@ -14,6 +15,9 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+// Custom Logger
+app.use(logger);
 
 // Body parser
 app.use(express.json());
