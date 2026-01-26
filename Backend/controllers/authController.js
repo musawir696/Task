@@ -6,10 +6,11 @@ const jwt = require('jsonwebtoken');
 // @access  Public
 exports.register = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
+        const { username, email, password } = req.body;
 
         // Create user
         const user = await User.create({
+            username,
             email,
             password
         });

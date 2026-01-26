@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
-import { Mail, Lock, UserPlus, LogIn, Send } from 'lucide-react';
+import { Mail, Lock, UserPlus, LogIn, Send, User } from 'lucide-react';
 
 const Auth = () => {
     const [isLogin, setIsLogin] = useState(true);
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -15,7 +16,8 @@ const Auth = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!email || !password) {
+        
+        if (!email || !password || (!isLogin && !username)) {
             return toast.error('Please fill in all fields');
         }
         
@@ -25,7 +27,7 @@ const Auth = () => {
                 await login(email, password);
                 toast.success('Welcome back!');
             } else {
-                await register(email, password);
+                await register(username, email, password);
                 toast.success('Account created successfully!');
             }
             navigate('/');
@@ -48,6 +50,22 @@ const Auth = () => {
                 </div>
 
                 <form onSubmit={handleSubmit}>
+                    {!isLogin && (
+                        <div className="form-group">
+                            <label>Username</label>
+                            <div className="input-with-icon">
+                                <User size={18} className="icon" />
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="yourname"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                    )}
+
                     <div className="form-group">
                         <label>Email Address</label>
                         <div className="input-with-icon">
