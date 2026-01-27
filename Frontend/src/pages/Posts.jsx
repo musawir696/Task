@@ -15,6 +15,8 @@ const Posts = () => {
     
     const page = parseInt(searchParams.get('page')) || 1;
     const filter = searchParams.get('status') || 'all';
+    const searchQuery = searchParams.get('search') || '';
+    const [searchInput, setSearchInput] = useState(searchQuery);
 
     const fetchPosts = useCallback(async () => {
         setLoading(true);
@@ -22,7 +24,8 @@ const Posts = () => {
             const res = await api.get('/posts', {
                 params: {
                     status: filter === 'all' ? undefined : filter,
-                    page
+                    page,
+                    search: searchQuery || undefined
                 }
             });
             setPosts(res.data.data || []);
@@ -32,7 +35,12 @@ const Posts = () => {
         } finally {
             setLoading(false);
         }
-    }, [filter, page]);
+    }, [filter, page, searchQuery]);
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        setSearchParams({ page: 1, status: filter, search: searchInput });
+    };
 
     useEffect(() => {
         fetchPosts();
@@ -107,10 +115,15 @@ const Posts = () => {
                         onClick={() => handleFilterChange('failed')}
                     >Failed</button>
                 </div>
-                <div className="search-box">
+                <form onSubmit={handleSearch} className="search-box">
                     <Search size={18} className="text-muted" />
-                    <input type="text" placeholder="Search content..." disabled />
-                </div>
+                    <input 
+                        type="text" 
+                        placeholder="Search content..." 
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                    />
+                </form>
             </div>
 
             <div className="posts-table-container card">

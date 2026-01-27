@@ -15,6 +15,11 @@ exports.getPosts = async (req, res, next) => {
             query.status = status;
         }
 
+        // Search functionality
+        if (req.query.search) {
+            query.content = { $regex: req.query.search, $options: 'i' };
+        }
+
         const total = await Post.countDocuments(query);
         const posts = await Post.find(query)
             .sort({ createdAt: -1 })
