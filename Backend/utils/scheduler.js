@@ -65,15 +65,16 @@ const publishScheduledPosts = async () => {
 };
 
 const startScheduler = () => {
-    // Only start local cron if NOT in production (Vercel uses Vercel Cron)
-    if (process.env.NODE_ENV !== 'production') {
+    // Start local cron if NOT on Vercel or if explicitly enabled
+    // Vercel handles cron via API, while Render/Railway use this local timer
+    if (process.env.VERCEL !== '1' || process.env.ENABLE_LOCAL_SCHEDULER === 'true') {
         // Run every minute
         cron.schedule('* * * * *', async () => {
             await publishScheduledPosts();
         });
         console.log('Local scheduler started (runs every minute)');
     } else {
-        console.log('Production mode: Scheduler disabled (use Vercel Cron instead)');
+        console.log('Vercel environment detected: Local scheduler disabled (use Vercel Cron)');
     }
 };
 
