@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../utils/api';
 import { toast } from 'react-hot-toast';
@@ -10,28 +10,81 @@ import {
 const Posts = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [posts, setPosts] = useState([]);
-    const [pagination, setPagination] = useState({});
     const [loading, setLoading] = useState(true);
+    const [totalPages, setTotalPages] = useState(1);
     
     const page = parseInt(searchParams.get('page')) || 1;
-    const status = searchParams.get('status') || '';
+    const filter = searchParams.get('status') || 'all';
+    const searchQuery = searchParams.get('search') || '';
+    const platformParam = searchParams.get('platforms') || '';
+    const startDateParam = searchParams.get('startDate') || '';
+    const endDateParam = searchParams.get('endDate') || '';
 
-    useEffect(() => {
-        fetchPosts();
-    }, [page, status]);
+    const [searchInput, setSearchInput] = useState(searchQuery);
+    const [selectedPlatforms, setSelectedPlatforms] = useState(platformParam ? platformParam.split(',') : []);
+    const [startDate, setStartDate] = useState(startDateParam);
+    const [endDate, setEndDate] = useState(endDateParam);
+    const [showFilters, setShowFilters] = useState(false);
 
-    const fetchPosts = async () => {
+    const PLATFORMS = ['Twitter', 'Facebook', 'Instagram', 'LinkedIn'];
+
+    const fetchPosts = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await api.get(`/posts?page=${page}&limit=10&status=${status}`);
-            setPosts(res.data.data);
-            setPagination(res.data.pagination);
-        } catch (err) {
-            toast.error('Failed to load posts');
+            const res = await api.get('/posts', {
+                params: {
+                    status: filter === 'all' ? undefined : filter,
+                    page,
+                    search: searchQuery || undefined,
+                    platforms: platformParam || undefined,
+                    startDate: startDateParam || undefined,
+                    endDate: endDateParam || undefined
+                }
+            });
+            setPosts(res.data.data || []);
+            setTotalPages(res.data.pagination?.pages || 1);
+        } catch {
+            toast.error('Failed to fetch posts');
         } finally {
             setLoading(false);
         }
+    }, [filter, page, searchQuery, platformParam, startDateParam, endDateParam]);
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        applyFilters();
     };
+
+    const togglePlatform = (platform) => {
+        if (selectedPlatforms.includes(platform)) {
+            setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
+        } else {
+            setSelectedPlatforms([...selectedPlatforms, platform]);
+        }
+    };
+
+    const applyFilters = () => {
+        setSearchParams({ 
+            page: 1, 
+            status: filter, 
+            search: searchInput,
+            platforms: selectedPlatforms.length > 0 ? selectedPlatforms.join(',') : '',
+            startDate: startDate || '',
+            endDate: endDate || ''
+        });
+    };
+
+    const clearFilters = () => {
+        setSearchInput('');
+        setSelectedPlatforms([]);
+        setStartDate('');
+        setEndDate('');
+        setSearchParams({ page: 1, status: filter });
+    };
+
+    useEffect(() => {
+        fetchPosts();
+    }, [fetchPosts]);
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this post?')) return;
@@ -50,7 +103,7 @@ const Posts = () => {
     };
 
     const handlePageChange = (newPage) => {
-        setSearchParams({ page: newPage, status });
+        setSearchParams({ page: newPage, status: filter });
     };
 
     const getStatusBadge = (status) => {
@@ -69,7 +122,7 @@ const Posts = () => {
 
     return (
         <div className="posts-page">
-            <header className="page-header">
+            <header className="page-header header-with-spacing">
                 <div>
                     <h1>Scheduled Posts</h1>
                     <p>Manage and track your social content</p>
@@ -86,27 +139,85 @@ const Posts = () => {
                 <div className="filter-group">
                     <Filter size={18} className="text-muted" />
                     <button 
-                        className={`filter-btn ${status === '' ? 'active' : ''}`}
-                        onClick={() => handleFilterChange('')}
+                        className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
+                        onClick={() => handleFilterChange('all')}
                     >All</button>
                     <button 
-                        className={`filter-btn ${status === 'scheduled' ? 'active' : ''}`}
+                        className={`filter-btn ${filter === 'scheduled' ? 'active' : ''}`}
                         onClick={() => handleFilterChange('scheduled')}
                     >Scheduled</button>
                     <button 
-                        className={`filter-btn ${status === 'published' ? 'active' : ''}`}
+                        className={`filter-btn ${filter === 'published' ? 'active' : ''}`}
                         onClick={() => handleFilterChange('published')}
                     >Published</button>
                     <button 
-                        className={`filter-btn ${status === 'failed' ? 'active' : ''}`}
+                        className={`filter-btn ${filter === 'failed' ? 'active' : ''}`}
                         onClick={() => handleFilterChange('failed')}
                     >Failed</button>
+                    
+                    <button 
+                        className={`filter-btn ${showFilters ? 'active' : ''}`}
+                        onClick={() => setShowFilters(!showFilters)}
+                        title="Advanced Filters"
+                    >
+                        <Filter size={16} /> Filters
+                    </button>
                 </div>
-                <div className="search-box">
+                <form onSubmit={handleSearch} className="search-box">
                     <Search size={18} className="text-muted" />
-                    <input type="text" placeholder="Search content..." disabled />
-                </div>
+                    <input 
+                        type="text" 
+                        placeholder="Search content..." 
+                        value={searchInput}
+                        onChange={(e) => setSearchInput(e.target.value)}
+                    />
+                </form>
             </div>
+
+            {showFilters && (
+                <div className="advanced-filters card fade-in">
+                    <div className="filter-row">
+                        <div className="filter-column">
+                            <label>Platforms</label>
+                            <div className="platform-toggles">
+                                {PLATFORMS.map(platform => (
+                                    <button
+                                        key={platform}
+                                        className={`platform-toggle ${selectedPlatforms.includes(platform) ? 'selected' : ''}`}
+                                        onClick={() => togglePlatform(platform)}
+                                    >
+                                        {platform}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="filter-column">
+                            <label>Date Range</label>
+                            <div className="date-inputs">
+                                <input 
+                                    type="date" 
+                                    className="date-input" 
+                                    value={startDate} 
+                                    onChange={(e) => setStartDate(e.target.value)} 
+                                    placeholder="Start Date" 
+                                />
+                                <span className="text-muted">-</span>
+                                <input 
+                                    type="date" 
+                                    className="date-input" 
+                                    value={endDate} 
+                                    onChange={(e) => setEndDate(e.target.value)} 
+                                    placeholder="End Date" 
+                                />
+                            </div>
+                        </div>
+                        <div className="filter-actions">
+                            <button className="btn btn-outline btn-sm" onClick={clearFilters}>Clear</button>
+                            <button className="btn btn-primary btn-sm" onClick={applyFilters}>Apply</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="posts-table-container card">
                 {loading ? (
@@ -136,14 +247,16 @@ const Posts = () => {
                                         </td>
                                         <td>{getStatusBadge(post.status)}</td>
                                         <td className="actions-cell">
-                                            {post.status !== 'published' && (
-                                                <Link to={`/posts/edit/${post._id}`} className="action-btn text-blue" title="Edit">
-                                                    <Edit3 size={18} />
-                                                </Link>
-                                            )}
-                                            <button onClick={() => handleDelete(post._id)} className="action-btn text-danger" title="Delete">
-                                                <Trash2 size={18} />
-                                            </button>
+                                            <div className="actions-wrapper">
+                                                {post.status !== 'published' && (
+                                                    <Link to={`/posts/edit/${post._id}`} className="action-btn text-blue" title="Edit">
+                                                        <Edit3 size={18} />
+                                                    </Link>
+                                                )}
+                                                <button onClick={() => handleDelete(post._id)} className="action-btn text-danger" title="Delete">
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -158,9 +271,9 @@ const Posts = () => {
                             >
                                 <ChevronLeft size={20} />
                             </button>
-                            <span className="page-info">Page {page} of {pagination.pages || 1}</span>
+                            <span className="page-info">Page {page} of {totalPages}</span>
                             <button 
-                                disabled={page === pagination.pages} 
+                                disabled={page === totalPages} 
                                 onClick={() => handlePageChange(page + 1)}
                                 className="page-btn"
                             >
@@ -177,7 +290,8 @@ const Posts = () => {
             </div>
 
             <style>{`
-                .header-actions { display: flex; gap: 0.75rem; }
+                .page-header { display: flex; justify-content: space-between; align-items: flex-end; }
+                .header-actions { display: flex; gap: 0.75rem; margin-bottom: 5px; }
                 .btn-outline { background: white; border: 1px solid var(--border); padding: 0.5rem; }
                 .spin { animation: spin 1s linear infinite; }
                 @keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
@@ -232,7 +346,9 @@ const Posts = () => {
                 .date-cell { font-size: 0.9rem; font-weight: 500; }
                 .date-cell span { display: block; font-size: 0.8rem; color: var(--text-muted); font-weight: 400; }
                 .text-right { text-align: right; }
-                .actions-cell { display: flex; justify-content: flex-end; gap: 0.75rem; }
+                .actions-cell { text-align: right; }
+                .actions-wrapper { display: flex; justify-content: flex-end; gap: 0.75rem; }
+                .header-with-spacing { margin-bottom: 2rem; }
                 .action-btn { 
                     background: none; 
                     border: none; 
@@ -277,6 +393,68 @@ const Posts = () => {
                     .filter-bar { flex-direction: column; align-items: stretch; gap: 1rem; }
                     .search-box { max-width: none; }
                 }
+                
+                .advanced-filters {
+                    margin-bottom: 1.5rem;
+                    padding: 1.5rem;
+                    background: #f8fafc;
+                    border: 1px solid var(--border);
+                }
+                .filter-row {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 2rem;
+                    align-items: flex-end;
+                }
+                .filter-column {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                }
+                .filter-column label {
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    color: var(--text-muted);
+                }
+                .platform-toggles {
+                    display: flex;
+                    gap: 0.5rem;
+                    flex-wrap: wrap;
+                }
+                .platform-toggle {
+                    padding: 0.35rem 0.75rem;
+                    border: 1px solid var(--border);
+                    background: white;
+                    border-radius: 20px;
+                    font-size: 0.85rem;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                .platform-toggle:hover { border-color: var(--primary); }
+                .platform-toggle.selected {
+                    background: var(--primary);
+                    color: white;
+                    border-color: var(--primary);
+                }
+                .date-inputs {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+                .date-input {
+                    padding: 0.4rem 0.75rem;
+                    border: 1px solid var(--border);
+                    border-radius: 6px;
+                    font-size: 0.9rem;
+                    outline: none;
+                }
+                .date-input:focus { border-color: var(--primary); }
+                .filter-actions {
+                    margin-left: auto;
+                    display: flex;
+                    gap: 0.5rem;
+                }
+                .btn-sm { font-size: 0.85rem; padding: 0.4rem 0.8rem; }
             `}</style>
         </div>
     );
