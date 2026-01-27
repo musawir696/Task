@@ -16,7 +16,17 @@ const Posts = () => {
     const page = parseInt(searchParams.get('page')) || 1;
     const filter = searchParams.get('status') || 'all';
     const searchQuery = searchParams.get('search') || '';
+    const platformParam = searchParams.get('platforms') || '';
+    const startDateParam = searchParams.get('startDate') || '';
+    const endDateParam = searchParams.get('endDate') || '';
+
     const [searchInput, setSearchInput] = useState(searchQuery);
+    const [selectedPlatforms, setSelectedPlatforms] = useState(platformParam ? platformParam.split(',') : []);
+    const [startDate, setStartDate] = useState(startDateParam);
+    const [endDate, setEndDate] = useState(endDateParam);
+    const [showFilters, setShowFilters] = useState(false);
+
+    const PLATFORMS = ['Twitter', 'Facebook', 'Instagram', 'LinkedIn'];
 
     const fetchPosts = useCallback(async () => {
         setLoading(true);
@@ -25,7 +35,10 @@ const Posts = () => {
                 params: {
                     status: filter === 'all' ? undefined : filter,
                     page,
-                    search: searchQuery || undefined
+                    search: searchQuery || undefined,
+                    platforms: platformParam || undefined,
+                    startDate: startDateParam || undefined,
+                    endDate: endDateParam || undefined
                 }
             });
             setPosts(res.data.data || []);
@@ -35,11 +48,38 @@ const Posts = () => {
         } finally {
             setLoading(false);
         }
-    }, [filter, page, searchQuery]);
+    }, [filter, page, searchQuery, platformParam, startDateParam, endDateParam]);
 
     const handleSearch = (e) => {
         e.preventDefault();
-        setSearchParams({ page: 1, status: filter, search: searchInput });
+        applyFilters();
+    };
+
+    const togglePlatform = (platform) => {
+        if (selectedPlatforms.includes(platform)) {
+            setSelectedPlatforms(selectedPlatforms.filter(p => p !== platform));
+        } else {
+            setSelectedPlatforms([...selectedPlatforms, platform]);
+        }
+    };
+
+    const applyFilters = () => {
+        setSearchParams({ 
+            page: 1, 
+            status: filter, 
+            search: searchInput,
+            platforms: selectedPlatforms.length > 0 ? selectedPlatforms.join(',') : '',
+            startDate: startDate || '',
+            endDate: endDate || ''
+        });
+    };
+
+    const clearFilters = () => {
+        setSearchInput('');
+        setSelectedPlatforms([]);
+        setStartDate('');
+        setEndDate('');
+        setSearchParams({ page: 1, status: filter });
     };
 
     useEffect(() => {
@@ -114,6 +154,14 @@ const Posts = () => {
                         className={`filter-btn ${filter === 'failed' ? 'active' : ''}`}
                         onClick={() => handleFilterChange('failed')}
                     >Failed</button>
+                    
+                    <button 
+                        className={`filter-btn ${showFilters ? 'active' : ''}`}
+                        onClick={() => setShowFilters(!showFilters)}
+                        title="Advanced Filters"
+                    >
+                        <Filter size={16} /> Filters
+                    </button>
                 </div>
                 <form onSubmit={handleSearch} className="search-box">
                     <Search size={18} className="text-muted" />
@@ -125,6 +173,51 @@ const Posts = () => {
                     />
                 </form>
             </div>
+
+            {showFilters && (
+                <div className="advanced-filters card fade-in">
+                    <div className="filter-row">
+                        <div className="filter-column">
+                            <label>Platforms</label>
+                            <div className="platform-toggles">
+                                {PLATFORMS.map(platform => (
+                                    <button
+                                        key={platform}
+                                        className={`platform-toggle ${selectedPlatforms.includes(platform) ? 'selected' : ''}`}
+                                        onClick={() => togglePlatform(platform)}
+                                    >
+                                        {platform}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="filter-column">
+                            <label>Date Range</label>
+                            <div className="date-inputs">
+                                <input 
+                                    type="date" 
+                                    className="date-input" 
+                                    value={startDate} 
+                                    onChange={(e) => setStartDate(e.target.value)} 
+                                    placeholder="Start Date" 
+                                />
+                                <span className="text-muted">-</span>
+                                <input 
+                                    type="date" 
+                                    className="date-input" 
+                                    value={endDate} 
+                                    onChange={(e) => setEndDate(e.target.value)} 
+                                    placeholder="End Date" 
+                                />
+                            </div>
+                        </div>
+                        <div className="filter-actions">
+                            <button className="btn btn-outline btn-sm" onClick={clearFilters}>Clear</button>
+                            <button className="btn btn-primary btn-sm" onClick={applyFilters}>Apply</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="posts-table-container card">
                 {loading ? (
@@ -300,6 +393,68 @@ const Posts = () => {
                     .filter-bar { flex-direction: column; align-items: stretch; gap: 1rem; }
                     .search-box { max-width: none; }
                 }
+                
+                .advanced-filters {
+                    margin-bottom: 1.5rem;
+                    padding: 1.5rem;
+                    background: #f8fafc;
+                    border: 1px solid var(--border);
+                }
+                .filter-row {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 2rem;
+                    align-items: flex-end;
+                }
+                .filter-column {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.5rem;
+                }
+                .filter-column label {
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    color: var(--text-muted);
+                }
+                .platform-toggles {
+                    display: flex;
+                    gap: 0.5rem;
+                    flex-wrap: wrap;
+                }
+                .platform-toggle {
+                    padding: 0.35rem 0.75rem;
+                    border: 1px solid var(--border);
+                    background: white;
+                    border-radius: 20px;
+                    font-size: 0.85rem;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                }
+                .platform-toggle:hover { border-color: var(--primary); }
+                .platform-toggle.selected {
+                    background: var(--primary);
+                    color: white;
+                    border-color: var(--primary);
+                }
+                .date-inputs {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+                .date-input {
+                    padding: 0.4rem 0.75rem;
+                    border: 1px solid var(--border);
+                    border-radius: 6px;
+                    font-size: 0.9rem;
+                    outline: none;
+                }
+                .date-input:focus { border-color: var(--primary); }
+                .filter-actions {
+                    margin-left: auto;
+                    display: flex;
+                    gap: 0.5rem;
+                }
+                .btn-sm { font-size: 0.85rem; padding: 0.4rem 0.8rem; }
             `}</style>
         </div>
     );

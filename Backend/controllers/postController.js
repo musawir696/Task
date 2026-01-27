@@ -9,10 +9,32 @@ exports.getPosts = async (req, res, next) => {
         const limit = parseInt(req.query.limit, 10) || 10;
         const startIndex = (page - 1) * limit;
         const status = req.query.status;
+        const platforms = req.query.platforms ? req.query.platforms.split(',') : null;
+        const startDate = req.query.startDate;
+        const endDate = req.query.endDate;
 
         let query = { user: req.user.id };
+        
+        // Status Filter
         if (status) {
             query.status = status;
+        }
+
+        // Platform Filter
+        if (platforms && platforms.length > 0) {
+            query.platforms = { $in: platforms };
+        }
+
+        // Date Range Filter
+        if (startDate || endDate) {
+            query.scheduleDate = {};
+            if (startDate) query.scheduleDate.$gte = new Date(startDate);
+            // set end date to end of day if only date string provided
+            if (endDate) {
+                const endDateTime = new Date(endDate);
+                endDateTime.setHours(23, 59, 59, 999);
+                query.scheduleDate.$lte = endDateTime;
+            }
         }
 
         // Search functionality
