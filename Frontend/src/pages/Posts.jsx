@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import api from '../utils/api';
 import { toast } from 'react-hot-toast';
@@ -10,28 +10,33 @@ import {
 const Posts = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [posts, setPosts] = useState([]);
-    const [pagination, setPagination] = useState({});
     const [loading, setLoading] = useState(true);
+    const [totalPages, setTotalPages] = useState(1);
     
     const page = parseInt(searchParams.get('page')) || 1;
-    const status = searchParams.get('status') || '';
+    const filter = searchParams.get('status') || 'all';
 
-    useEffect(() => {
-        fetchPosts();
-    }, [page, status]);
-
-    const fetchPosts = async () => {
+    const fetchPosts = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await api.get(`/posts?page=${page}&limit=10&status=${status}`);
-            setPosts(res.data.data);
-            setPagination(res.data.pagination);
-        } catch (err) {
-            toast.error('Failed to load posts');
+            const res = await api.get('/posts', {
+                params: {
+                    status: filter === 'all' ? undefined : filter,
+                    page
+                }
+            });
+            setPosts(res.data.data || []);
+            setTotalPages(res.data.pagination?.pages || 1);
+        } catch {
+            toast.error('Failed to fetch posts');
         } finally {
             setLoading(false);
         }
-    };
+    }, [filter, page]);
+
+    useEffect(() => {
+        fetchPosts();
+    }, [fetchPosts]);
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this post?')) return;
@@ -50,7 +55,7 @@ const Posts = () => {
     };
 
     const handlePageChange = (newPage) => {
-        setSearchParams({ page: newPage, status });
+        setSearchParams({ page: newPage, status: filter });
     };
 
     const getStatusBadge = (status) => {
@@ -69,7 +74,7 @@ const Posts = () => {
 
     return (
         <div className="posts-page">
-            <header className="page-header">
+            <header className="page-header header-with-spacing">
                 <div>
                     <h1>Scheduled Posts</h1>
                     <p>Manage and track your social content</p>
@@ -86,19 +91,19 @@ const Posts = () => {
                 <div className="filter-group">
                     <Filter size={18} className="text-muted" />
                     <button 
-                        className={`filter-btn ${status === '' ? 'active' : ''}`}
-                        onClick={() => handleFilterChange('')}
+                        className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
+                        onClick={() => handleFilterChange('all')}
                     >All</button>
                     <button 
-                        className={`filter-btn ${status === 'scheduled' ? 'active' : ''}`}
+                        className={`filter-btn ${filter === 'scheduled' ? 'active' : ''}`}
                         onClick={() => handleFilterChange('scheduled')}
                     >Scheduled</button>
                     <button 
-                        className={`filter-btn ${status === 'published' ? 'active' : ''}`}
+                        className={`filter-btn ${filter === 'published' ? 'active' : ''}`}
                         onClick={() => handleFilterChange('published')}
                     >Published</button>
                     <button 
-                        className={`filter-btn ${status === 'failed' ? 'active' : ''}`}
+                        className={`filter-btn ${filter === 'failed' ? 'active' : ''}`}
                         onClick={() => handleFilterChange('failed')}
                     >Failed</button>
                 </div>
@@ -136,14 +141,16 @@ const Posts = () => {
                                         </td>
                                         <td>{getStatusBadge(post.status)}</td>
                                         <td className="actions-cell">
-                                            {post.status !== 'published' && (
-                                                <Link to={`/posts/edit/${post._id}`} className="action-btn text-blue" title="Edit">
-                                                    <Edit3 size={18} />
-                                                </Link>
-                                            )}
-                                            <button onClick={() => handleDelete(post._id)} className="action-btn text-danger" title="Delete">
-                                                <Trash2 size={18} />
-                                            </button>
+                                            <div className="actions-wrapper">
+                                                {post.status !== 'published' && (
+                                                    <Link to={`/posts/edit/${post._id}`} className="action-btn text-blue" title="Edit">
+                                                        <Edit3 size={18} />
+                                                    </Link>
+                                                )}
+                                                <button onClick={() => handleDelete(post._id)} className="action-btn text-danger" title="Delete">
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -158,9 +165,9 @@ const Posts = () => {
                             >
                                 <ChevronLeft size={20} />
                             </button>
-                            <span className="page-info">Page {page} of {pagination.pages || 1}</span>
+                            <span className="page-info">Page {page} of {totalPages}</span>
                             <button 
-                                disabled={page === pagination.pages} 
+                                disabled={page === totalPages} 
                                 onClick={() => handlePageChange(page + 1)}
                                 className="page-btn"
                             >
@@ -177,7 +184,8 @@ const Posts = () => {
             </div>
 
             <style>{`
-                .header-actions { display: flex; gap: 0.75rem; }
+                .page-header { display: flex; justify-content: space-between; align-items: flex-end; }
+                .header-actions { display: flex; gap: 0.75rem; margin-bottom: 5px; }
                 .btn-outline { background: white; border: 1px solid var(--border); padding: 0.5rem; }
                 .spin { animation: spin 1s linear infinite; }
                 @keyframes spin { from {transform: rotate(0deg);} to {transform: rotate(360deg);} }
@@ -232,7 +240,9 @@ const Posts = () => {
                 .date-cell { font-size: 0.9rem; font-weight: 500; }
                 .date-cell span { display: block; font-size: 0.8rem; color: var(--text-muted); font-weight: 400; }
                 .text-right { text-align: right; }
-                .actions-cell { display: flex; justify-content: flex-end; gap: 0.75rem; }
+                .actions-cell { text-align: right; }
+                .actions-wrapper { display: flex; justify-content: flex-end; gap: 0.75rem; }
+                .header-with-spacing { margin-bottom: 2rem; }
                 .action-btn { 
                     background: none; 
                     border: none; 
