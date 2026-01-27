@@ -22,8 +22,15 @@ app.use(logger);
 // Body parser
 app.use(express.json());
 
-// Enable CORS
-app.use(cors());
+// CORS Configuration - Restrict to specific origin
+const corsOptions = {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
+    optionsSuccessStatus: 200,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
 
 // Swagger definition
 const swaggerOptions = {
