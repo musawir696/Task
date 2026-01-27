@@ -1,0 +1,58 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - post
+    paths:
+      - "Backend/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    branches:
+      - main
+      - master
+      - post
+    paths:
+      - "Backend/**"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./Backend
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: Backend/package-lock.json
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Check for syntax errors
+        run: node -c index.js
+
+      - name: 🏗️ Run build script
+        run: npm run build
+
+      - name: ✅ Build successful
+        run: echo "Backend checks passed!"
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/post')
+
+    steps:
+      - name: 🚀 Deploy to Vercel
+        run: echo "Deploy to Vercel triggered (configure Vercel Git integration)"
