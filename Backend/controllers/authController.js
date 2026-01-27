@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 
 // @desc    Register user
 // @route   POST /api/auth/register
-// @access  Public
 exports.register = async (req, res, next) => {
     try {
         const { username, email, password } = req.body;
@@ -23,7 +22,6 @@ exports.register = async (req, res, next) => {
 
 // @desc    Login user
 // @route   POST /api/auth/login
-// @access  Public
 exports.login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -53,9 +51,6 @@ exports.login = async (req, res, next) => {
     }
 };
 
-// @desc    Log user out / clear cookie
-// @route   POST /api/auth/logout
-// @access  Private
 exports.logout = async (req, res, next) => {
     res.status(200).json({
         success: true,

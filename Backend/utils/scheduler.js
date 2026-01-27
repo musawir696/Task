@@ -7,11 +7,11 @@ const publishScheduledPosts = async () => {
     console.log('Running scheduler logic to check for pending posts...');
     
     try {
-        // Find posts that are scheduled and the schedule time has passed
+       
         const postsToPublish = await Post.find({
             status: 'scheduled',
             scheduleDate: { $lte: new Date() }
-        }).sort({ createdAt: 1 }); // Order by creation time if same schedule time
+        }).sort({ createdAt: 1 }); 
 
         if (postsToPublish.length === 0) {
             return { published: 0, message: 'No posts to publish' };

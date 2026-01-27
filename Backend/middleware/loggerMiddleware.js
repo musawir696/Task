@@ -1,7 +1,7 @@
 const logger = (req, res, next) => {
     const start = Date.now();
     
-    // Original send function to intercept the body
+   
     const oldSend = res.send;
 
     res.send = function (data) {
@@ -19,14 +19,14 @@ const logger = (req, res, next) => {
 
         console.log(`${color}${method} ${url} ${status}\x1b[0m - ${duration}ms`);
         
-        // If it's an error, log the response body (message)
+       
         if (status >= 400 && res.locals.body) {
             try {
                 const parsedBody = JSON.parse(res.locals.body);
                 const message = parsedBody.message || parsedBody.error || 'No error message';
                 console.log(`\x1b[31mError Message: ${message}\x1b[0m`);
             } catch (e) {
-                // If not JSON, just log a snippet
+               
                 console.log(`\x1b[31mError Context: ${res.locals.body.toString().substring(0, 50)}\x1b[0m`);
             }
         }

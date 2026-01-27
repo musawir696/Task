@@ -1,7 +1,6 @@
 const Post = require('../models/Post');
 
-// @desc    Get dashboard stats
-// @route   GET /api/dashboard/stats
+
 // @access  Private
 exports.getStats = async (req, res, next) => {
     try {
@@ -40,9 +39,7 @@ exports.getStats = async (req, res, next) => {
     }
 };
 
-// @desc    Get upcoming scheduled posts
-// @route   GET /api/dashboard/upcoming
-// @access  Private
+
 exports.getUpcoming = async (req, res, next) => {
     try {
         const posts = await Post.find({

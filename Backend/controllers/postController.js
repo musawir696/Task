@@ -1,7 +1,6 @@
 const Post = require('../models/Post');
 
-// @desc    Get all posts
-// @route   GET /api/posts
+
 // @access  Private
 exports.getPosts = async (req, res, next) => {
     try {
@@ -64,8 +63,7 @@ exports.getPosts = async (req, res, next) => {
     }
 };
 
-// @desc    Get single post
-// @route   GET /api/posts/:id
+
 // @access  Private
 exports.getPost = async (req, res, next) => {
     try {
@@ -86,9 +84,6 @@ exports.getPost = async (req, res, next) => {
     }
 };
 
-// @desc    Create new post
-// @route   POST /api/posts
-// @access  Private
 exports.createPost = async (req, res, next) => {
     try {
         // Add user to req.body
@@ -107,9 +102,7 @@ exports.createPost = async (req, res, next) => {
     }
 };
 
-// @desc    Update post
-// @route   PUT /api/posts/:id
-// @access  Private
+
 exports.updatePost = async (req, res, next) => {
     try {
         let post = await Post.findById(req.params.id);
@@ -118,7 +111,7 @@ exports.updatePost = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'Post not found' });
         }
 
-        // Make sure user owns post
+       
         if (post.user.toString() !== req.user.id) {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
@@ -144,9 +137,6 @@ exports.updatePost = async (req, res, next) => {
     }
 };
 
-// @desc    Delete post
-// @route   DELETE /api/posts/:id
-// @access  Private
 exports.deletePost = async (req, res, next) => {
     try {
         const post = await Post.findById(req.params.id);

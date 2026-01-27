@@ -8,18 +8,18 @@ const errorHandler = require('./middleware/errorMiddleware');
 const { startScheduler } = require('./utils/scheduler');
 const logger = require('./middleware/loggerMiddleware');
 
-// Load env vars
+
 dotenv.config();
 
-// Connect to database
+
 connectDB();
 
 const app = express();
 
-// Custom Logger
+
 app.use(logger);
 
-// Body parser
+
 app.use(express.json());
 
 // CORS Configuration - Restrict to specific origin
@@ -61,7 +61,7 @@ const swaggerOptions = {
             },
         ],
     },
-    apis: ['./routes/*.js', './controllers/*.js'], // Path to the API docs
+    apis: ['./routes/*.js', './controllers/*.js'], 
 };
 
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
@@ -89,8 +89,7 @@ startScheduler();
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
     console.log(`Error: ${err.message}`);
-    // Close server & exit process
-    // server.close(() => process.exit(1));
+  
 });
 
 // Export app for Vercel
