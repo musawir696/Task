@@ -12,6 +12,12 @@
       "dest": "index.js"
     }
   ],
+  "crons": [
+    {
+      "path": "/api/cron/publish-posts",
+      "schedule": "* * * * *"
+    }
+  ],
   "env": {
     "NODE_ENV": "production"
   }

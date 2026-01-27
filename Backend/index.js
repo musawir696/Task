@@ -5,7 +5,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorMiddleware');
-const startScheduler = require('./utils/scheduler');
+const { startScheduler } = require('./utils/scheduler');
 const logger = require('./middleware/loggerMiddleware');
 
 // Load env vars
@@ -71,6 +71,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/posts', require('./routes/postRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
+app.use('/api/cron', require('./routes/cronRoutes'));
 
 // Error handler
 app.use(errorHandler);
