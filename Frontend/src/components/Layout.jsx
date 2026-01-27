@@ -23,6 +23,23 @@ const Layout = () => {
                 .main-content {
                     min-height: calc(100vh - 70px);
                 }
+                
+                /* Tablet */
+                @media (max-width: 768px) {
+                    .container {
+                        padding: 1.5rem 1rem;
+                    }
+                }
+                
+                /* Mobile */
+                @media (max-width: 480px) {
+                    .container {
+                        padding: 1rem 0.75rem;
+                    }
+                    .main-content {
+                        min-height: calc(100vh - 60px);
+                    }
+                }
             `}</style>
         </div>
     );

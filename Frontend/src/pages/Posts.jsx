@@ -263,6 +263,33 @@ const Posts = () => {
                             </tbody>
                         </table>
                         
+                        {/* Mobile Card View */}
+                        {posts.map(post => (
+                            <div key={`card-${post._id}`} className="post-card fade-in">
+                                <div className="post-card-content">
+                                    <p>{post.content.substring(0, 100)}...</p>
+                                </div>
+                                <div className="post-card-meta">
+                                    <div>{getPlatformIcons(post.platforms)}</div>
+                                    <div className="date-cell">
+                                        {new Date(post.scheduleDate).toLocaleDateString()}
+                                        <span>{new Date(post.scheduleDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                    </div>
+                                    <div>{getStatusBadge(post.status)}</div>
+                                </div>
+                                <div className="post-card-actions">
+                                    {post.status !== 'published' && (
+                                        <Link to={`/posts/edit/${post._id}`} className="action-btn text-blue" title="Edit">
+                                            <Edit3 size={18} />
+                                        </Link>
+                                    )}
+                                    <button onClick={() => handleDelete(post._id)} className="action-btn text-danger" title="Delete">
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                        
                         <div className="pagination">
                             <button 
                                 disabled={page === 1} 
@@ -327,7 +354,7 @@ const Posts = () => {
                     border: 1px solid var(--border);
                     max-width: 300px;
                 }
-                .search-box input { background: none; border: none; outline: none; font-size: 0.9rem; }
+                .search-box input { background: none; border: none; outline: none; font-size: 0.9rem; width: 100%; }
                 
                 .posts-table-container { padding: 0; overflow: hidden; }
                 .posts-table { width: 100%; border-collapse: collapse; }
@@ -387,12 +414,6 @@ const Posts = () => {
                 .page-info { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); }
                 
                 .table-loading, .empty-table { padding: 4rem; text-align: center; color: var(--text-muted); }
-                
-                @media (max-width: 768px) {
-                    .posts-table th:nth-child(2), .posts-table td:nth-child(2) { display: none; }
-                    .filter-bar { flex-direction: column; align-items: stretch; gap: 1rem; }
-                    .search-box { max-width: none; }
-                }
                 
                 .advanced-filters {
                     margin-bottom: 1.5rem;
@@ -455,6 +476,116 @@ const Posts = () => {
                     gap: 0.5rem;
                 }
                 .btn-sm { font-size: 0.85rem; padding: 0.4rem 0.8rem; }
+                
+                /* Mobile Card Layout */
+                .post-card {
+                    display: none;
+                    padding: 1rem;
+                    border-bottom: 1px solid var(--border);
+                }
+                .post-card-content {
+                    margin-bottom: 0.75rem;
+                }
+                .post-card-meta {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 0.75rem;
+                    flex-wrap: wrap;
+                    gap: 0.5rem;
+                }
+                .post-card-actions {
+                    display: flex;
+                    gap: 0.5rem;
+                    justify-content: flex-end;
+                }
+                
+                /* Tablet */
+                @media (max-width: 768px) {
+                    .page-header {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 1rem;
+                    }
+                    .filter-bar {
+                        flex-direction: column;
+                        align-items: stretch;
+                        gap: 1rem;
+                        padding: 1rem;
+                    }
+                    .search-box {
+                        max-width: none;
+                    }
+                    .filter-row {
+                        gap: 1rem;
+                    }
+                    .filter-actions {
+                        margin-left: 0;
+                        width: 100%;
+                    }
+                    .posts-table th:nth-child(2),
+                    .posts-table td:nth-child(2) {
+                        display: none;
+                    }
+                }
+                
+                /* Mobile */
+                @media (max-width: 480px) {
+                    .header-with-spacing {
+                        margin-bottom: 1.5rem;
+                    }
+                    .header-actions {
+                        width: 100%;
+                        justify-content: space-between;
+                    }
+                    .filter-bar {
+                        padding: 0.75rem;
+                    }
+                    .filter-group {
+                        flex-wrap: wrap;
+                        gap: 0.35rem;
+                    }
+                    .filter-btn {
+                        padding: 0.35rem 0.65rem;
+                        font-size: 0.85rem;
+                    }
+                    .search-box {
+                        padding: 0.6rem 0.85rem;
+                    }
+                    .advanced-filters {
+                        padding: 1rem;
+                    }
+                    .filter-row {
+                        flex-direction: column;
+                    }
+                    .date-inputs {
+                        flex-direction: column;
+                        align-items: stretch;
+                    }
+                    .date-input {
+                        width: 100%;
+                    }
+                    
+                    /* Hide table, show cards */
+                    .posts-table {
+                        display: none;
+                    }
+                    .post-card {
+                        display: block;
+                    }
+                    .pagination {
+                        padding: 1rem;
+                        gap: 1rem;
+                    }
+                    .page-btn {
+                        min-width: 44px;
+                        min-height: 44px;
+                        justify-content: center;
+                    }
+                    .table-loading, .empty-table {
+                        padding: 2rem 1rem;
+                    }
+                }
             `}</style>
         </div>
     );

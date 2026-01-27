@@ -87,6 +87,7 @@ const Navbar = () => {
                     border: none;
                     cursor: pointer;
                     padding: 0.5rem 0;
+                    min-height: 44px;
                 }
                 .nav-link:hover, .nav-link.active {
                     color: var(--primary);
@@ -101,9 +102,64 @@ const Navbar = () => {
                 .btn-logout:hover {
                     color: var(--danger);
                 }
+                
+                /* Tablet */
                 @media (max-width: 768px) {
-                    .nav-logo span, .nav-link span { display: none; }
-                    .nav-links { gap: 1rem; }
+                    .nav-container {
+                        padding: 0 1rem;
+                    }
+                    .nav-logo {
+                        font-size: 1.1rem;
+                    }
+                    .nav-links {
+                        gap: 1rem;
+                    }
+                    .nav-link {
+                        font-size: 0.9rem;
+                    }
+                }
+                
+                /* Mobile */
+                @media (max-width: 480px) {
+                    .navbar {
+                        padding: 0.5rem 0;
+                    }
+                    .nav-container {
+                        padding: 0 0.75rem;
+                    }
+                    .nav-logo {
+                        font-size: 1rem;
+                        gap: 0.5rem;
+                    }
+                    .nav-logo span {
+                        display: none;
+                    }
+                    .nav-links {
+                        gap: 0.5rem;
+                    }
+                    .nav-link span {
+                        display: none;
+                    }
+                    .nav-link {
+                        padding: 0.5rem;
+                        min-width: 44px;
+                        justify-content: center;
+                    }
+                    .btn-sm {
+                        padding: 0.5rem;
+                        min-width: 44px;
+                    }
+                }
+                
+                /* Small Mobile */
+                @media (max-width: 360px) {
+                    .nav-links {
+                        gap: 0.25rem;
+                    }
+                    .nav-link, .btn-sm {
+                        padding: 0.4rem;
+                        min-width: 40px;
+                    }
                 }
             `}</style>
         </nav>

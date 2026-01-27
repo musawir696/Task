@@ -196,6 +196,7 @@ const PostForm = () => {
                     cursor: pointer;
                     font-weight: 500;
                     transition: all 0.2s;
+                    min-height: 44px;
                 }
                 .platform-btn:hover { border-color: var(--primary); background: #f8fafc; }
                 .platform-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
@@ -209,10 +210,52 @@ const PostForm = () => {
                 
                 label { display: flex; align-items: center; gap: 0.5rem; font-weight: 600 !important; color: #334155 !important; }
 
+                /* Tablet */
                 @media (max-width: 768px) {
-                    .form-row { grid-template-columns: 1fr; }
-                    .platform-grid { grid-template-columns: 1fr; }
-                    .form-container { padding: 1.5rem; }
+                    .form-container {
+                        padding: 2rem;
+                    }
+                    .form-row {
+                        grid-template-columns: 1fr;
+                    }
+                    .platform-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+                }
+                
+                /* Mobile */
+                @media (max-width: 480px) {
+                    .form-container {
+                        padding: 1.5rem;
+                    }
+                    .page-header h1 {
+                        font-size: 1.5rem;
+                    }
+                    .page-header p {
+                        font-size: 0.9rem;
+                    }
+                    .form-row {
+                        grid-template-columns: 1fr;
+                        gap: 0;
+                        margin-top: 0;
+                    }
+                    .platform-grid {
+                        grid-template-columns: 1fr;
+                        gap: 0.75rem;
+                    }
+                    .platform-btn {
+                        padding: 0.85rem;
+                    }
+                    .form-actions {
+                        flex-direction: column-reverse;
+                        gap: 0.75rem;
+                    }
+                    .form-actions button {
+                        width: 100%;
+                    }
+                    .text-area {
+                        font-size: 16px;
+                    }
                 }
             `}</style>
         </div>

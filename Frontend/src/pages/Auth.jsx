@@ -166,6 +166,37 @@ const Auth = () => {
                     font-size: 0.9rem;
                     color: var(--text-muted);
                 }
+                
+                /* Mobile */
+                @media (max-width: 480px) {
+                    .auth-container {
+                        padding: 0.75rem;
+                    }
+                    .auth-card {
+                        padding: 2rem 1.5rem;
+                    }
+                    .auth-header h1 {
+                        font-size: 1.5rem;
+                    }
+                    .logo-icon {
+                        width: 56px;
+                        height: 56px;
+                        margin-bottom: 1rem;
+                    }
+                    .auth-header {
+                        margin-bottom: 1.5rem;
+                    }
+                }
+                
+                /* Small Mobile */
+                @media (max-width: 360px) {
+                    .auth-card {
+                        padding: 1.5rem 1rem;
+                    }
+                    .auth-header h1 {
+                        font-size: 1.35rem;
+                    }
+                }
             `}</style>
         </div>
     );
