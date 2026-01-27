@@ -73,6 +73,21 @@ app.use('/api/posts', require('./routes/postRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/cron', require('./routes/cronRoutes'));
 
+// Root route
+app.get('/', (req, res) => {
+    res.json({ 
+        success: true, 
+        message: 'Social Media Scheduler API is running...',
+        environment: process.env.NODE_ENV,
+        endpoints: {
+            auth: '/api/auth',
+            posts: '/api/posts',
+            dashboard: '/api/dashboard',
+            docs: '/api-docs'
+        }
+    });
+});
+
 // Error handler
 app.use(errorHandler);
 
