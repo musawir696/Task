@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import api from '../utils/api';
 import { toast } from 'react-hot-toast';
 import { Save, X, Calendar, Type, Globe, Twitter, Facebook, Instagram, Image as ImageIcon } from 'lucide-react';
+import '../styles/PostForm.css';
+
 
 const PostForm = () => {
     const { id } = useParams();
@@ -128,9 +130,10 @@ const PostForm = () => {
                                     className={`platform-btn ${formData.platforms.includes(p.name) ? 'active' : ''}`}
                                     onClick={() => handlePlatformToggle(p.name)}
                                 >
-                                    <span className="icon" style={{color: formData.platforms.includes(p.name) ? 'white' : p.color}}>
+                                    <span className={`icon platform-icon-${p.name.toLowerCase()}`}>
                                         {p.icon}
                                     </span>
+
                                     {p.name}
                                 </button>
                             ))}
@@ -163,7 +166,8 @@ const PostForm = () => {
 
                     {formData.imageUrl && (
                         <div className="image-preview card">
-                            <img src={formData.imageUrl} alt="Preview" onError={(e) => e.target.style.display='none'} />
+                            <img src={formData.imageUrl} alt="Preview" />
+
                         </div>
                     )}
 
@@ -178,86 +182,7 @@ const PostForm = () => {
                 </form>
             </div>
 
-            <style>{`
-                .form-container { max-width: 800px; margin: 0 auto; padding: 2.5rem; }
-                .text-area { resize: vertical; padding: 1rem; }
-                .char-count { text-align: right; font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem; }
-                
-                .platform-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-                .platform-btn {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 0.75rem;
-                    padding: 0.75rem;
-                    border: 1px solid var(--border);
-                    border-radius: 8px;
-                    background: white;
-                    cursor: pointer;
-                    font-weight: 500;
-                    transition: all 0.2s;
-                    min-height: 44px;
-                }
-                .platform-btn:hover { border-color: var(--primary); background: #f8fafc; }
-                .platform-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-                .platform-btn.active .icon { color: white !important; }
-                
-                .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
-                .form-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
-                
-                .image-preview { margin-top: 1rem; padding: 0.5rem; max-height: 200px; display: flex; justify-content: center; overflow: hidden; }
-                .image-preview img { max-width: 100%; object-fit: cover; border-radius: 4px; }
-                
-                label { display: flex; align-items: center; gap: 0.5rem; font-weight: 600 !important; color: #334155 !important; }
 
-                /* Tablet */
-                @media (max-width: 768px) {
-                    .form-container {
-                        padding: 2rem;
-                    }
-                    .form-row {
-                        grid-template-columns: 1fr;
-                    }
-                    .platform-grid {
-                        grid-template-columns: repeat(2, 1fr);
-                    }
-                }
-                
-                /* Mobile */
-                @media (max-width: 480px) {
-                    .form-container {
-                        padding: 1.5rem;
-                    }
-                    .page-header h1 {
-                        font-size: 1.5rem;
-                    }
-                    .page-header p {
-                        font-size: 0.9rem;
-                    }
-                    .form-row {
-                        grid-template-columns: 1fr;
-                        gap: 0;
-                        margin-top: 0;
-                    }
-                    .platform-grid {
-                        grid-template-columns: 1fr;
-                        gap: 0.75rem;
-                    }
-                    .platform-btn {
-                        padding: 0.85rem;
-                    }
-                    .form-actions {
-                        flex-direction: column-reverse;
-                        gap: 0.75rem;
-                    }
-                    .form-actions button {
-                        width: 100%;
-                    }
-                    .text-area {
-                        font-size: 16px;
-                    }
-                }
-            `}</style>
         </div>
     );
 };
